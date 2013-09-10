@@ -208,6 +208,8 @@
   // AUDIO PLAYER PLUGIN DEFINITION
   // ==============================
 
+  var old = $.fn.audioplayer;
+
   $.fn.audioplayer = function (option) {
     return this.each(function () {
       var $this   = $(this),
