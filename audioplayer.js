@@ -92,7 +92,7 @@
     },
 
     update: function () {
-
+      this.$element.toggleClass('playing', this.playing);
       this.$play.prop('disabled', !(this.initialized && !this.playing));
       this.$pause.prop('disabled', !(this.initialized && this.playing));
       this.$stop.prop('disabled', !(this.initialized && this.playing));
@@ -100,7 +100,6 @@
       this.$forward.prop('disabled', !(this.initialized));
       this.$random.prop('disabled', !(this.initialized));
       this.$label.text(this.getCurrent() ? this.getCurrent().id : '');
-
     },
 
     getCurrent: function () {

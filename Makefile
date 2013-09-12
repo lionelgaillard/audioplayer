@@ -1,5 +1,2 @@
-
-build:
-	uglifyjs -nc ./audioplayer.js > ./audioplayer.min.js
-
-.PHONY: build
+minimize:
+	uglifyjs -nc audioplayer.js > audioplayer.min.js
