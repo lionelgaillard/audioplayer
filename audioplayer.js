@@ -46,11 +46,14 @@
     url: '/swf/',
     // Use Flash, then HTML5 Audio as callback, or inverse
     preferFlash: true,
-    // Play sound immediately
+    // Start playing immediately
     autoPlay: true,
-    // Play soounds randomly
+    // Play songs randomly
     random: false,
-    // Sounds directory
+    // Duration from song start (in milliseconds) within `backward`
+    // will go to previous song instead of restart the current song
+    backwardDelay: 2000,
+    // Songs directory
     // { "Song's title": "Song's URL" }
     sounds: {}
   };
@@ -145,14 +148,19 @@
     backward: function (e) {
       e && e.preventDefault();
 
-      this.stop();
-      if (this.index - 1 >= 0) {
-        this.index--;
+      if (this.getCurrent().position < this.options.backwardDelay) {
+        this.stop();
+        if (this.index - 1 >= 0) {
+          this.index--;
+        } else {
+          this.index = this.sounds.length - 1;
+        }
+        this.$element.trigger('backward.audioplayer', this.getCurrent());
+        this.play();
       } else {
-        this.index = this.sounds.length - 1;
+        sm.setPosition(this.getCurrent().id, 0);
+        this.$element.trigger('backward.audioplayer', this.getCurrent());
       }
-      this.$element.trigger('backward.audioplayer', this.getCurrent());
-      this.play();
     },
 
     forward: function (e) {
