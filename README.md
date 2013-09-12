@@ -17,11 +17,14 @@ AudioPlayer.DEFAULTS = {
   url: '/swf/',
   // Use Flash, then HTML5 Audio as callback, or inverse
   preferFlash: true,
-  // Play sound immediately
+  // Start playing immediately
   autoPlay: true,
-  // Play soounds randomly
+  // Play songs randomly
   random: false,
-  // Sounds directory
+  // Duration from song start (in milliseconds) within `backward`
+  // will go to previous song instead of restart the current song
+  backwardDelay: 2000,
+  // Songs directory
   // { "Song's title": "Song's URL" }
   sounds: {}
 };
