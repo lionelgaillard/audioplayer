@@ -1,4 +1,4 @@
-(function ($, sm) {
+(function ($, sm, undefined) {
 
   "use strict";
 
@@ -7,31 +7,30 @@
   // =======================
 
   function AudioPlayer (element, options) {
-    if ($.isEmptyObject(options.sounds)) {
-      throw new Error('AudioPlayer requires "sounds"');
-    }
-
     this.options     = $.extend({}, AudioPlayer.DEFAULTS, options);
 
     this.$element    = $(element).hide();
-    this.id          = this.$element.prop('id');
-
-    if (!this.id) {
-      throw new Error('AduioPlayer requires an id');
-    }
-
     this.initialized = false;
     this.playing     = false;
     this.sounds      = [];
     this.index       = -1;
 
-    this.$play       = $('[data-play=#'+this.id+']', this.$element).click($.proxy(this.play, this));
-    this.$pause      = $('[data-pause=#'+this.id+']', this.$element).click($.proxy(this.pause, this));
-    this.$stop       = $('[data-stop=#'+this.id+']', this.$element).click($.proxy(this.stop, this));
-    this.$backward   = $('[data-backward=#'+this.id+']', this.$element).click($.proxy(this.backward, this));
-    this.$forward    = $('[data-forward=#'+this.id+']', this.$element).click($.proxy(this.forward, this));
-    this.$random     = $('[data-random=#'+this.id+']', this.$element).click($.proxy(this.random, this));
-    this.$label      = $('[data-label=#'+this.id+']', this.$element);
+    this.$playlist   = $('[data-playlist]', this.$element);
+    this.$label      = $('[data-label]', this.$element);
+    this.$play       = $('[data-play]', this.$element);
+    this.$pause      = $('[data-pause]', this.$element);
+    this.$stop       = $('[data-stop]', this.$element);
+    this.$backward   = $('[data-backward]', this.$element);
+    this.$forward    = $('[data-forward]', this.$element);
+    this.$random     = $('[data-random]', this.$element);
+
+    this.$element.on('click', '[data-play]', $.proxy(this.play, this));
+    this.$element.on('click', '[data-pause]', $.proxy(this.pause, this));
+    this.$element.on('click', '[data-stop]', $.proxy(this.stop, this));
+    this.$element.on('click', '[data-backward]', $.proxy(this.backward, this));
+    this.$element.on('click', '[data-forward]', $.proxy(this.forward, this));
+    this.$element.on('click', '[data-random]', $.proxy(this.random, this));
+    this.$element.on('click', '[data-to]', $.proxy(this.to, this));
 
     this.update();
 
@@ -43,7 +42,7 @@
 
   AudioPlayer.DEFAULTS = {
     // Directory of SM2's SWF files
-    url: '/swf/',
+    url: '/vendor/schillmania/soundmanager2/swf',
     // Use Flash, then HTML5 Audio as callback, or inverse
     preferFlash: true,
     // Start playing immediately
@@ -52,10 +51,7 @@
     random: false,
     // Duration from song start (in milliseconds) within `backward`
     // will go to previous song instead of restart the current song
-    backwardDelay: 2000,
-    // Songs directory
-    // { "Song's title": "Song's URL" }
-    sounds: {}
+    backwardDelay: 2000
   };
 
   AudioPlayer.prototype = {
@@ -69,7 +65,15 @@
       }
 
       this.sounds = [];
-      $.each(this.options.sounds, function (title, url) {
+      this.$playlist.find('a,button').each(function (i) {
+        var $this = $(this),
+            title = $this.attr('title') || $this.attr('data-title') || $this.text(),
+            url   = $this.attr('href')  || $this.attr('data-url');
+
+        if ($this.attr('data-to') === undefined) {
+          $this.attr('data-to', i);
+        }
+
         self.sounds.push(sm.createSound({
           id: title,
           url: url,
@@ -96,13 +100,13 @@
 
     update: function () {
       this.$element.toggleClass('playing', this.playing);
+      this.$label.text(this.getCurrent() ? this.getCurrent().id : '');
       this.$play.prop('disabled', !(this.initialized && !this.playing));
       this.$pause.prop('disabled', !(this.initialized && this.playing));
       this.$stop.prop('disabled', !(this.initialized && this.playing));
       this.$backward.prop('disabled', !(this.initialized));
       this.$forward.prop('disabled', !(this.initialized));
       this.$random.prop('disabled', !(this.initialized));
-      this.$label.text(this.getCurrent() ? this.getCurrent().id : '');
     },
 
     getCurrent: function () {
@@ -208,6 +212,25 @@
         this.forward();
       }
       this.$element.trigger('next.audioplayer', this.getCurrent());
+    },
+
+    to: function (e) {
+      var index = e.target ? parseInt($(e.target).attr('data-to')) : e;
+
+      e.target && e.preventDefault();
+
+      if (index < 0) {
+        index = 0;
+      } else if (index >= this.sounds.length) {
+        index = this.sounds.length - 1;
+      }
+
+      if (index != this.index) {
+        this.stop();
+        this.index = index;
+        this.$element.trigger('to.audioplayer', this.getCurrent());
+        this.play();
+      }
     }
   };
 
