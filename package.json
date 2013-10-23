@@ -1,0 +1,30 @@
+{
+  "name": "audioplayer",
+  "version": "1.0.0",
+  "description": "jQuery plugin on top of \"SoundManager 2\" to implement a custom audio player",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Ascarius/audioplayer.git"
+  },
+  "keywords": [
+    "jquery",
+    "plugin",
+    "player",
+    "audio",
+    "sound",
+    "music",
+    "song"
+  ],
+  "author": {
+    "name": "Lionel Gaillard",
+    "url": "http://wxrstudios.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ascarius/audioplayer/issues"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.4"
+  }
+}
