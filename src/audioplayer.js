@@ -1,15 +1,17 @@
 (function (factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['jquery', 'soundmanager'], factory);
+    define(['jquery'], factory);
   } else if (typeof exports === 'object') {
     // Node/CommonJS
-    factory(require('jquery'), require('soundmanager'));
+    factory(require('jquery'));
   } else {
     // Browser globals
-    factory(jQuery, soundManager);
+    factory(jQuery);
   }
-}(function ($, sm, undefined) {
+}(function ($) {
+
+  var sm = window.soundManager;
 
   "use strict";
 
@@ -49,22 +51,26 @@
 
     this.update();
 
-    sm.setup({
-      url: this.options.url,
-      onready: $.proxy(this.init, this)
-    });
+    if (typeof this.DRIVERS[this.options.driver] !== 'function') {
+      throw new Error('Driver required');
+    }
+
+    this.driver = this.DRIVERS[this.options.driver](this, this.options);
+    this.driver.init($.proxy(this.init, this));
   }
 
   $.extend(AudioPlayer.prototype, {
 
     DEFAULTS: {
 
+      driver: '',
+
       /**
        * Directory of SM2's SWF files
        *
        * @type {String}
        */
-      url: '/vendor/schillmania/soundmanager2/swf',
+      url: undefined,
 
       /**
        * Use Flash, then HTML5 Audio as callback, or inverse
@@ -97,6 +103,13 @@
     },
 
     /**
+     * Drivers
+     *
+     * @type {Object}
+     */
+    DRIVERS: {},
+
+    /**
      * Init
      *
      * @return {void}
@@ -119,11 +132,7 @@
           $this.attr('data-to', i);
         }
 
-        self.sounds.push(sm.createSound({
-          id: title,
-          url: url,
-          onfinish: onFinish
-        }));
+        self.sounds.push(this.driver.add(title, url, onFinish));
       });
 
       this.initialized = true;
@@ -162,13 +171,35 @@
     /**
      * Get current soudn
      *
-     * @return {Object}
+     * @return {Object|null}
      */
     getCurrent: function () {
       if (this.sounds.length) {
-        return this.sounds[this.index == -1 ? 0 : this.index];
+        return this.sounds[this.index === -1 ? 0 : this.index];
       }
-      return undefined;
+      return null;
+    },
+
+    /**
+     * Find sound instance by id
+     *
+     * @param  {String} id
+     * @return {Object|null}
+     */
+    find: function (id) {
+      var i = this.sounds.length;
+
+      if (this.getCurrent() && this.getCurrent().id === id) {
+        return this.getCurrent();
+      }
+
+      while (i--) {
+        if (this.sounds[i].id === id) {
+          return this.sounds[i];
+        }
+      }
+
+      return null;
     },
 
     /**
@@ -181,7 +212,7 @@
       e && e.preventDefault();
 
       if (this.getCurrent()) {
-        sm.play(this.getCurrent().id);
+        this.driver.play(this.getCurrent().id);
         this.playing = true;
         this.update();
         this.$element.trigger('play.audioplayer', this.getCurrent());
@@ -198,7 +229,7 @@
       e && e.preventDefault();
 
       if (this.getCurrent()) {
-        sm.pause(this.getCurrent().id);
+        this.driver.pause(this.getCurrent().id);
         this.playing = false;
         this.update();
         this.$element.trigger('pause.audioplayer', this.getCurrent());
@@ -215,7 +246,7 @@
       e && e.preventDefault();
 
       if (this.getCurrent()) {
-        sm.stop(this.getCurrent().id);
+        this.driver.stop(this.getCurrent().id);
         this.playing = false;
         this.update();
         this.$element.trigger('stop.audioplayer', this.getCurrent());
@@ -241,7 +272,7 @@
         this.$element.trigger('backward.audioplayer', this.getCurrent());
         this.play();
       } else {
-        sm.setPosition(this.getCurrent().id, 0);
+        this.driver.setPosition(this.getCurrent().id, 0);
         this.$element.trigger('backward.audioplayer', this.getCurrent());
       }
     },
@@ -351,7 +382,7 @@
     return this.each(function () {
       var $this   = $(this),
           data    = $this.data('wxr.audioplayer'),
-          options = typeof option == 'object' && option;
+          options = typeof option === 'object' && option;
 
       if (!data) {
         $this.data('wxr.audioplayer', (data = new this.Constructor(this, options)));
