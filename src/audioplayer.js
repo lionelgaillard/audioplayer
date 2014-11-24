@@ -1,4 +1,15 @@
-(function ($, sm, undefined) {
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery', 'soundmanager'], factory);
+  } else if (typeof exports === 'object') {
+    // Node/CommonJS
+    factory(require('jquery'), require('soundmanager'));
+  } else {
+    // Browser globals
+    factory(jQuery, soundManager);
+  }
+}(function ($, sm, undefined) {
 
   "use strict";
 
@@ -369,4 +380,4 @@
     return this;
   };
 
-})(window.jQuery, window.soundManager);
+}));
