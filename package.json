@@ -6,6 +6,7 @@
     "type": "git",
     "url": "git://github.com/Ascarius/audioplayer.git"
   },
+  "main": "src/audioplayer.js",
   "keywords": [
     "jquery",
     "plugin",
