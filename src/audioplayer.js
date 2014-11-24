@@ -2,12 +2,17 @@
 
   "use strict";
 
+  var old = $.fn.audioplayer;
 
-  // AUDIO PLAYER DEFINITION
-  // =======================
 
+  /**
+   * Constructor
+   *
+   * @param {Element} element
+   * @param {Object} options
+   */
   function AudioPlayer (element, options) {
-    this.options     = $.extend({}, AudioPlayer.DEFAULTS, options);
+    this.options     = $.extend({}, this.DEFAULTS, options);
 
     this.$element    = $(element).hide();
     this.initialized = false;
@@ -40,22 +45,52 @@
     });
   }
 
-  AudioPlayer.DEFAULTS = {
-    // Directory of SM2's SWF files
-    url: '/vendor/schillmania/soundmanager2/swf',
-    // Use Flash, then HTML5 Audio as callback, or inverse
-    preferFlash: true,
-    // Start playing immediately
-    autoPlay: true,
-    // Play songs randomly
-    random: false,
-    // Duration from song start (in milliseconds) within `backward`
-    // will go to previous song instead of restart the current song
-    backwardDelay: 2000
-  };
+  $.extend(AudioPlayer.prototype, {
 
-  AudioPlayer.prototype = {
+    DEFAULTS: {
 
+      /**
+       * Directory of SM2's SWF files
+       *
+       * @type {String}
+       */
+      url: '/vendor/schillmania/soundmanager2/swf',
+
+      /**
+       * Use Flash, then HTML5 Audio as callback, or inverse
+       *
+       * @type {Boolean}
+       */
+      preferFlash: true,
+
+      /**
+       * Start playing immediately
+       *
+       * @type {Boolean}
+       */
+      autoPlay: true,
+
+      /**
+       * Play songs randomly
+       *
+       * @type {Boolean}
+       */
+      random: false,
+
+      /**
+       * Duration from song start (in milliseconds) within `backward`
+       * will go to previous song instead of restart the current song
+       *
+       * @type {Number}
+       */
+      backwardDelay: 2000
+    },
+
+    /**
+     * Init
+     *
+     * @return {void}
+     */
     init: function () {
       var self = this,
           onFinish = $.proxy(this.next, this);
@@ -98,6 +133,11 @@
       }
     },
 
+    /**
+     * Update UI
+     *
+     * @return {void}
+     */
     update: function () {
       this.$element.toggleClass('playing', this.playing);
       this.$label.text(this.getCurrent() ? this.getCurrent().id : '');
@@ -109,6 +149,11 @@
       this.$random.prop('disabled', !(this.initialized));
     },
 
+    /**
+     * Get current soudn
+     *
+     * @return {Object}
+     */
     getCurrent: function () {
       if (this.sounds.length) {
         return this.sounds[this.index == -1 ? 0 : this.index];
@@ -116,6 +161,12 @@
       return undefined;
     },
 
+    /**
+     * Play
+     *
+     * @param  {Event|undefined} e
+     * @return {void}
+     */
     play: function (e) {
       e && e.preventDefault();
 
@@ -127,6 +178,12 @@
       }
     },
 
+    /**
+     * Pause
+     *
+     * @param  {Event|undefined} e
+     * @return {void}
+     */
     pause: function (e) {
       e && e.preventDefault();
 
@@ -138,6 +195,12 @@
       }
     },
 
+    /**
+     * Stop
+     *
+     * @param  {Event|undefined} e
+     * @return {void}
+     */
     stop: function (e) {
       e && e.preventDefault();
 
@@ -149,6 +212,12 @@
       }
     },
 
+    /**
+     * Backward
+     *
+     * @param  {Event|undefined} e
+     * @return {void}
+     */
     backward: function (e) {
       e && e.preventDefault();
 
@@ -167,6 +236,12 @@
       }
     },
 
+    /**
+     * Forward
+     *
+     * @param  {Event|undefined} e
+     * @return {void}
+     */
     forward: function (e) {
       e && e.preventDefault();
 
@@ -180,6 +255,12 @@
       this.play();
     },
 
+    /**
+     * Random
+     *
+     * @param  {Event|undefined} e
+     * @return {void}
+     */
     random: function (e) {
       var length = this.sounds.length,
           candidates, i;
@@ -205,9 +286,15 @@
       }
     },
 
+    /**
+     * Next
+     *
+     * @param  {Event|undefined} e
+     * @return {void}
+     */
     next: function (e) {
       e && e.preventDefault();
-      
+
       if (this.options.random) {
         this.random();
       } else {
@@ -216,6 +303,12 @@
       this.$element.trigger('next.audioplayer', this.getCurrent());
     },
 
+    /**
+     * To
+     *
+     * @param  {Number|Event|undefined} e
+     * @return {void}
+     */
     to: function (e) {
       var index = e.target ? parseInt($(e.target).attr('data-to')) : e;
 
@@ -234,14 +327,16 @@
         this.play();
       }
     }
-  };
+
+  });
 
 
-  // AUDIO PLAYER PLUGIN DEFINITION
-  // ==============================
-
-  var old = $.fn.audioplayer;
-
+  /**
+   * jQuery plugin
+   *
+   * @param  {Object|undefined} option
+   * @return {jQuery}
+   */
   $.fn.audioplayer = function (option) {
     return this.each(function () {
       var $this   = $(this),
@@ -259,9 +354,11 @@
   };
 
 
-  // AUDIO PLAYER NO CONFLICT
-  // ========================
-
+  /**
+   * jQuery plugin's no conflit method
+   *
+   * @return {$.fn.audioplayer}
+   */
   $.fn.audioplayer.noConflict = function () {
     $.fn.audioplayer = old;
     return this;
