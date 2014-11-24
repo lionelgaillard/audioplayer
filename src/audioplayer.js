@@ -4,7 +4,6 @@
 
   var old = $.fn.audioplayer;
 
-
   /**
    * Constructor
    *
@@ -344,7 +343,7 @@
           options = typeof option == 'object' && option;
 
       if (!data) {
-        $this.data('wxr.audioplayer', (data = new AudioPlayer(this, options)));
+        $this.data('wxr.audioplayer', (data = new this.Constructor(this, options)));
       }
 
       if (typeof option == 'string') {
@@ -353,6 +352,12 @@
     });
   };
 
+  /**
+   * jQuery plugin's constructor for inheritance purpose
+   *
+   * @type {AudioPlayer}
+   */
+  $.fn.audioplayer.Constructor = AudioPlayer;
 
   /**
    * jQuery plugin's no conflit method
