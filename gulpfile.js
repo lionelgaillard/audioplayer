@@ -6,10 +6,11 @@ var concat     = require('gulp-concat');
 var rename     = require('gulp-rename');
 var del        = require('del');
 var spawn      = require('child_process').spawn;
+var webpack    = require('gulp-webpack');
 
 gulp.task('default', ['config', 'scripts']);
 
-gulp.task('scripts', ['scripts:lint', 'scripts:bundle']);
+gulp.task('scripts', ['scripts:lint', 'scripts:bundles']);
 
 gulp.task('scripts:lint', function () {
   gulp
@@ -20,46 +21,53 @@ gulp.task('scripts:lint', function () {
   ;
 });
 
-gulp.task('scripts:bundle', ['scripts:clean', 'scripts:bundle:base', 'scripts:bundle:soundmanager', 'scripts:bundle:soundjs']);
+gulp.task('scripts:bundles', ['scripts:clean', 'scripts:bundles:soundmanager', 'scripts:bundles:soundjs']);
 
 gulp.task('scripts:clean', function (cb) {
   del(['dist/**/*'], cb);
 });
 
-gulp.task('scripts:bundle:base', function () {
+gulp.task('scripts:bundles:soundmanager', function () {
   gulp
-    .src('src/**/*.js')
+    .src('src/audioplayer-soundmanager.js')
+    .pipe(webpack({
+      output: {
+        library: 'audioplayer-soundmanager',
+        libraryTarget: 'umd'
+      },
+      externals: {
+        jquery: true,
+        soundManager: true
+      }
+    }))
+    .pipe(concat('audioplayer-soundmanager.js'))
+    .pipe(gulp.dest('dist'))
     .pipe(sourcemaps.init())
-      .pipe(uglify({ compress: true }))
-      .pipe(rename({extname: '.min.js'}))
+    .pipe(uglify({ compress: true }))
+    .pipe(concat('audioplayer-soundmanager.min.js'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
   ;
 });
 
-gulp.task('scripts:bundle:soundmanager', function () {
+gulp.task('scripts:bundles:soundjs', function () {
   gulp
-    .src([
-      'src/audioplayer.js',
-      'src/drivers/soundmanager.js'
-    ])
-    .pipe(sourcemaps.init())
-      .pipe(uglify({ compress: true }))
-      .pipe(concat('audioplayer-soundmanager.min.js'))
-    .pipe(sourcemaps.write('.'))
+    .src('src/audioplayer-soundjs.js')
+    .pipe(webpack({
+      output: {
+        library: 'audioplayer-soundjs',
+        libraryTarget: 'umd'
+      },
+      externals: {
+        jquery: true,
+        createjs: true
+      }
+    }))
+    .pipe(concat('audioplayer-soundjs.js'))
     .pipe(gulp.dest('dist'))
-  ;
-});
-
-gulp.task('scripts:bundle:soundjs', function () {
-  gulp
-    .src([
-      'src/audioplayer.js',
-      'src/drivers/soundjs.js'
-    ])
     .pipe(sourcemaps.init())
-      .pipe(uglify({ compress: true }))
-      .pipe(concat('audioplayer-soundjs.min.js'))
+    .pipe(uglify({ compress: true }))
+    .pipe(concat('audioplayer-soundjs.min.js'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
   ;

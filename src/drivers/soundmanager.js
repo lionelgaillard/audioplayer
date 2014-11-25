@@ -1,73 +1,63 @@
-(function (factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
-    define(['jquery', 'soundmanager'], factory);
-  } else if (typeof exports === 'object') {
-    // Node/CommonJS
-    module.exports = factory(require('jquery'), require('soundmanager'));
-  } else {
-    // Browser globals
-    factory(jQuery, soundManager);
+var AudioPlayer  = require('../audioplayer-core');
+var soundManager = require('soundManager');
+var $            = require('jquery');
+
+function SoundManagerDriver (player, options) {
+  this.player  = player;
+  this.options = $.extend({}, this.DEFAULTS, options);
+}
+
+$.extend(SoundManagerDriver.prototype, {
+
+  DEFAUTS: {
+
+    /**
+     * Directory of SM2's SWF files
+     *
+     * @type {String}
+     */
+    url: undefined
+
+  },
+
+  init: function (callback) {
+    soundManager.setup($.extend({
+      onready: callback
+    }, this.options));
+  },
+
+  create: function (id, url) {
+    var onComplete = $.proxy(this.player.next, this.player);
+
+    this.player.add(soundManager.createSound({
+      id: id,
+      url: url,
+      onfinish: onComplete
+    }));
+  },
+
+  play: function () {
+    soundManager.play(this.player.getCurrent().id);
+  },
+
+  pause: function () {
+    soundManager.pause(this.player.getCurrent().id);
+  },
+
+  stop: function () {
+    soundManager.stop(this.player.getCurrent().id);
+  },
+
+  setPosition: function (position) {
+    soundManager.setPosition(this.player.getCurrent().id, position);
   }
-}(function ($, sm, undefined) {
 
-  var AudioPlayer = $.fn.audioplayer.Constructor;
+});
 
-  function Driver (player, options) {
-    this.player  = player;
-    this.options = $.extend({}, this.DEFAULTS, options);
-  }
+AudioPlayer.prototype.DEFAULTS.driver = 'soundManager';
 
-  $.extend(Driver.prototype, {
+AudioPlayer.prototype.DRIVERS.soundManager = function (player, options) {
+  return new SoundManagerDriver(player, options);
+};
 
-    DEFAUTS: {
-
-      /**
-       * Directory of SM2's SWF files
-       *
-       * @type {String}
-       */
-      url: undefined
-
-    },
-
-    init: function (callback) {
-      sm.setup($.extend({
-        onready: callback
-      }, this.options));
-    },
-
-    create: function (id, url, onFinish) {
-      return sm.createSound({
-        id: id,
-        url: url,
-        onfinish: onFinish
-      });
-    },
-
-    play: function (id) {
-      sm.play(id);
-    },
-
-    pause: function (id) {
-      sm.pause(id);
-    },
-
-    stop: function (id) {
-      sm.stop(id);
-    },
-
-    setPosition: function (id) {
-      sm.setPosition(id, 0);
-    },
-
-  });
-
-  AudioPlayer.prototype.DRIVERS.soundmanager = function (player, options) {
-    return new Driver(player, options);
-  };
-
-  AudioPlayer.prototype.DEFAULTS.driver = 'soundmanager';
-
-  return Driver;
-}));
+module.exports = AudioPlayer.prototype.DRIVERS.soundManager;
