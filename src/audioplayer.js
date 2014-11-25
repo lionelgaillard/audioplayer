@@ -4,14 +4,12 @@
     define(['jquery'], factory);
   } else if (typeof exports === 'object') {
     // Node/CommonJS
-    factory(require('jquery'));
+    module.exports = factory(require('jquery'));
   } else {
     // Browser globals
     factory(jQuery);
   }
 }(function ($) {
-
-  var sm = window.soundManager;
 
   "use strict";
 
@@ -24,9 +22,8 @@
    * @param {Object} options
    */
   function AudioPlayer (element, options) {
-    this.options     = $.extend({}, this.DEFAULTS, options);
-
     this.$element    = $(element).hide();
+    this.options     = $.extend({}, this.DEFAULTS, options);
     this.initialized = false;
     this.playing     = false;
     this.sounds      = [];
@@ -51,6 +48,7 @@
 
     this.update();
 
+    console.log(this.DRIVERS);
     if (typeof this.DRIVERS[this.options.driver] !== 'function') {
       throw new Error('Driver required');
     }
@@ -411,4 +409,5 @@
     return this;
   };
 
+  return AudioPlayer;
 }));

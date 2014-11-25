@@ -4,12 +4,14 @@
     define(['jquery', 'createjs'], factory);
   } else if (typeof exports === 'object') {
     // Node/CommonJS
-    factory(require('jquery'), require('createjs'));
+    module.exports = factory(require('jquery'), require('createjs'));
   } else {
     // Browser globals
-    factory(jQuery, createjs.Sound);
+    factory(jQuery, createjs);
   }
 }(function ($, createjs, undefined) {
+
+  var AudioPlayer = $.fn.audioplayer.Constructor;
 
   function Driver (player, options) {
     this.player  = player;
@@ -21,7 +23,7 @@
     DEFAUTS: {
 
       /**
-       * Directory of SM2's SWF files
+       * Directory of SoundJS SWF files
        *
        * @type {String}
        */
@@ -60,7 +62,7 @@
 
   });
 
-  $.fn.audioplayer.Constructor.prototype.DRIVERS.soundjs = function (player, options) {
+  AudioPlayer.prototype.DRIVERS.soundjs = function (player, options) {
 
     if (options.url) {
       createjs.FlashPlugin.swfPath = options.url;
@@ -75,4 +77,7 @@
     return new Driver(player, options);
   };
 
+  AudioPlayer.prototype.DEFAULTS.driver = 'soundjs';
+
+  return Driver;
 }));

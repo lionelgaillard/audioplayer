@@ -4,12 +4,14 @@
     define(['jquery', 'soundmanager'], factory);
   } else if (typeof exports === 'object') {
     // Node/CommonJS
-    factory(require('jquery'), require('soundmanager'));
+    module.exports = factory(require('jquery'), require('soundmanager'));
   } else {
     // Browser globals
     factory(jQuery, soundManager);
   }
 }(function ($, sm, undefined) {
+
+  var AudioPlayer = $.fn.audioplayer.Constructor;
 
   function Driver (player, options) {
     this.player  = player;
@@ -61,8 +63,11 @@
 
   });
 
-  $.fn.audioplayer.Constructor.prototype.DRIVERS.soundmanager = function (player, options) {
+  AudioPlayer.prototype.DRIVERS.soundmanager = function (player, options) {
     return new Driver(player, options);
   };
 
+  AudioPlayer.prototype.DEFAULTS.driver = 'soundmanager';
+
+  return Driver;
 }));
